@@ -5,6 +5,7 @@ from . import views
 
 router = routers.DefaultRouter()
 router.register("users", views.UserViewSet, 'user')
+router.register('staff', views.StaffViewSet, basename='staff')
 urlpatterns = [
     path('', include(router.urls)),
     path('oauth2-info/', views.AuthInfo.as_view())

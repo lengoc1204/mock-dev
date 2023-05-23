@@ -3,7 +3,8 @@ from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django import forms
-from .models import User
+from rest_framework import serializers
+from .models import *
 
 
 class UserChangeForm(forms.ModelForm):
@@ -50,4 +51,31 @@ class UserAdmin(BaseUserAdmin):
       ordering = ('email', )
 
 
+class TourDetailStackInLine(admin.StackedInline):
+    model = Tour
+
+
+class TransportInline(admin.StackedInline):
+    model = Transport
+
+
+class HotelInline(admin.StackedInline):
+    model = Hotel
+
+
+class TourAdmin(admin.ModelAdmin):
+    list_display = [f.name for f in Tour._meta.fields]
+    list_filter = ['created_date']
+    search_fields = ['name', 'duration']
+
+class BlogAdmin(admin.ModelAdmin):
+    list_display = [f.name for f in Blog._meta.fields]
+
+
+admin.site.register(Hotel)
+admin.site.register(TagBlog)
+admin.site.register(Blog, BlogAdmin)
+admin.site.register(Destination)
+admin.site.register(Tour, TourAdmin)
 admin.site.register(User, UserAdmin)
+admin.site.register(Staff)
