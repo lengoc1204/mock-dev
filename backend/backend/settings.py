@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'drf_yasg',
     'rest_framework',
     'oauth2_provider',
     'core',
@@ -44,12 +45,15 @@ INSTALLED_APPS = [
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
-    )
+    ),
+    'DEFAULT_PARSER_CLASSES': [
+            'rest_framework.parsers.JSONParser',
+        ]
 }
 
 OAUTH2_INFO = {
-    "client_id": "",
-    "client_serect": ""
+    "client_id": "C2tGyAEFPzKjoZo8ERVT70mh7fiNZPzqxGhhrAgA",
+    "client_secret": "nM3zaORTlYgwdr4srpIQ9z2GAkXIM1zvcmRsJpfMUqX1mm3VcZceDoatMN9ZZ1Ni9RKpoH4oGidVlTl3PXbKqJFHfOwOarT1xymWV1cjy6h0jK7Bx4bmlxQ8vpYmUszB"
 }
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
