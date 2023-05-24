@@ -7,6 +7,10 @@ from rest_framework import serializers
 from .models import *
 
 
+class MockAppAdmin(admin.AdminSite):
+    site_header = 'MOCK BACKEND'
+    site_title = 'MOCK ADMIN'
+
 class UserChangeForm(forms.ModelForm):
     password = ReadOnlyPasswordHashField(label=_("Password"),
         help_text=_("Raw passwords are not stored, so there is no way to see "
@@ -51,7 +55,7 @@ class UserAdmin(BaseUserAdmin):
       ordering = ('email', )
 
 
-class TourDetailStackInLine(admin.StackedInline):
+class TourStackInLine(admin.StackedInline):
     model = Tour
 
 
@@ -63,19 +67,56 @@ class HotelInline(admin.StackedInline):
     model = Hotel
 
 
+class DestinationAdmin(admin.ModelAdmin):
+    count_detail = serializers.SerializerMethodField('count_tour')
+
+    def count_tour(self, tour):
+        return tour.tour.count()
+
+    list_display = ['id', 'name', 'image', 'content', 'active', 'count_tour']
+    inlines = [TourStackInLine]
+
+
 class TourAdmin(admin.ModelAdmin):
-    list_display = [f.name for f in Tour._meta.fields]
+    list_display = ["name","price", "discount", "duration", "time_start","departure","destination","get_final_price", "image_tag"]
     list_filter = ['created_date']
     search_fields = ['name', 'duration']
+
 
 class BlogAdmin(admin.ModelAdmin):
     list_display = [f.name for f in Blog._meta.fields]
 
 
+class LikeAdmin(admin.ModelAdmin):
+    list_display = [f.name for f in Like._meta.fields]
+
+
+class CmtBlogAdmin(admin.ModelAdmin):
+    list_display = [f.name for f in CommentBlog._meta.fields]
+
+
+class CmtTourAdmin(admin.ModelAdmin):
+    list_display = [f.name for f in CommentTour._meta.fields]
+
+
+class BlogAdmin(admin.ModelAdmin):
+    list_display = [f.name for f in Blog._meta.fields]
+
+
+class BookingAdmin(admin.ModelAdmin):
+    list_display = ["tour", "customer", "status", "adult", "children5", "children11", "children2", "room", "get_children5", "get_children11", "get_total"]
+
+
 admin.site.register(Hotel)
 admin.site.register(TagBlog)
 admin.site.register(Blog, BlogAdmin)
-admin.site.register(Destination)
+admin.site.register(Departure)
+admin.site.register(Destination, DestinationAdmin)
+admin.site.register(CommentTour, CmtTourAdmin)
+admin.site.register(CommentBlog, CmtBlogAdmin)
+admin.site.register(Views)
+admin.site.register(Like, LikeAdmin)
+admin.site.register(Booking,BookingAdmin)
 admin.site.register(Tour, TourAdmin)
 admin.site.register(User, UserAdmin)
 admin.site.register(Staff)
