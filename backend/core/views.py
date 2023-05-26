@@ -374,6 +374,77 @@ class DestinationView(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveA
     parser_classes = [JSONParser, MultiPartParser]
 
 
+class TourDetailViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView,
+                        generics.CreateAPIView, generics.UpdateAPIView, generics.DestroyAPIView):
+    queryset = Tour.objects.filter(active=True)
+    serializer_class = TourDetailSerializers
+    parser_classes = [MultiPartParser, JSONParser]
+    pagination_class = [TourPagination, ]
+
+    def partial_update(self, request, *args, **kwargs):
+        t = request.data['id']
+        if t:
+            if request.data['id'] == self.get_object().pk:
+                try:
+                    d = request.data
+                    p = Tour.objects.update_or_create(pk=t, defaults={
+                        "departure": d["departure"],
+                        "name": d['name'],
+                        "time_start": d["time_start"],
+                        "duration": d['duration'],
+                        "single_rom": d["single_room"],
+                        "price": ['price'],
+                        "discount": d['discount'],
+                        "image": d["image"]
+                    })
+                    a = Tour.objects.get(pk=request.data['id'])
+                    return Response(TourDetailSerializers(a).data, status=status.HTTP_200_OK)
+                except:
+                    return Response(status=status.HTTP_400_BAD_REQUEST)
+            return super().partial_update(request, *args, **kwargs)
+        return Response(status=status.HTTP_403_FORBIDDEN)
+
+        def get_queryset(self): #search tour
+            t = Tour.objects.filter(active=True)
+            try:
+                name= self.request.query_params.get("name")
+                price = self.request.query_params.get("price")
+                time_to = self.request.query_params.get("time_to")
+                time_from = self.request.query_params.get("time_from")
+                duration_to = self.request.query_params.get("duration_to")
+                duration_from = self.request.query_params.get("duration_from")
+                departure = self.request.query_params.get("departure")
+                destination = self.request.query_params.get("destination")
+
+                try:
+                    if name is not None:
+                        t = t.filter(name__icontains=name)
+                    if price is not None:
+                        t = t.filter(price__lte=price)
+                    if time_from is not None and time_to is None:
+                        t = t.filter(time_start__gte=time_from)
+                    if time_to is not None and time_from is None:
+                        t = t.filter(time_start__lte=time_to)
+                    if duration_from is not None and duration_to is None:
+                        t = t.filter(duration_to__gte=duration_from)
+                    if duration_to is not None and duration_from is None:
+                        t = t.filter(duration_from__lte = duration_to)
+                    if departure is not None:
+                        t = t.filter(departure=departure)
+                    if destination is not None:
+                        t=t.filter(destination=destination)
+                    return t
+                except:
+                    return Response(status=status.HTTP_400_BAD_REQUEST, data="search_failed")
+            except:
+                return Response(status=status.HTTP_400_BAD_REQUEST, data="invalid")
+
+            @action(methods=['get'], detail=True, url_path="comment")
+            def get_comment(self, request, pk):
+                cmt = Tour.objects.get(pk=pk).cmt_tour.all()
+                return Response(CmtTourSerializer(cmt, many=True).data, status=status.HTTP_200_OK)
+
+
 class AuthInfo(APIView):
     def get(self, request):
         return Response(settings.OAUTH2_INFO, status=status.HTTP_200_OK)
