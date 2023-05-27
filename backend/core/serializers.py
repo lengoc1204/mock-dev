@@ -80,6 +80,7 @@ class TransportSerializer(ModelSerializer):
 
 
 class LikeSerializer(ModelSerializer):
+    class Meta:
         model = Like
         fields = ["id", "type", "blog", "customer", "created_date"]
 
@@ -105,7 +106,7 @@ class CmtBlogSerializer(ModelSerializer):
 
     class Meta:
         model = CommentBlog
-        fields = ["id", "content", "blog", "customer", "created_date", "active"]
+        fields = ["id", "comment", "blog", "customer", "created_date", "active"]
 
 
 
@@ -130,9 +131,10 @@ class BlogSerializer(ModelSerializer):
 
 
 class ViewSerializer(ModelSerializer):
+
     class Meta:
         model = Views
-        fields = ["id", "views", "created_date"]
+        fields = ["id", "views", "tour"]
 
 
 class CmtTourSerializer(ModelSerializer):
@@ -183,6 +185,8 @@ class TourDetailSerializers(ModelSerializer):
     transport = TransportSerializer(many=True, read_only=True)
     tag = TagTourSerializer(many=True, read_only=True)
 
+    cmt_tour = SerializerMethodField()
+
     def get_rate(self, tour):
         avg = tour.rating.aggregate(Avg('rate'))
         count_rate = tour.rating.aggregate(Count('rate'))
@@ -203,10 +207,12 @@ class TourDetailSerializers(ModelSerializer):
         except:
             return "Remaining"
 
+    def get_cmt_tour(self, tour):
+        return CmtTourSerializer(tour.cmt_tour.all(), many=True).data
     class Meta:
         model = Tour
         fields = ['id', 'name', 'image', 'slot', 'time_start', 'duration', 'content', 'departure', 'destination',
-                  'single_room',
+                  'single_room', 'cmt_tour',
                   'price', 'discount', 'tag',
                   'transport', 'status', 'transport', 'rate', 'status', 'get_final_price']
 

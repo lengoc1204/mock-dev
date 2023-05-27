@@ -52,8 +52,8 @@ REST_FRAMEWORK = {
 }
 
 OAUTH2_INFO = {
-    "client_id": "C2tGyAEFPzKjoZo8ERVT70mh7fiNZPzqxGhhrAgA",
-    "client_secret": "nM3zaORTlYgwdr4srpIQ9z2GAkXIM1zvcmRsJpfMUqX1mm3VcZceDoatMN9ZZ1Ni9RKpoH4oGidVlTl3PXbKqJFHfOwOarT1xymWV1cjy6h0jK7Bx4bmlxQ8vpYmUszB"
+    "client_id": "V0yInzGKhOsRiVbsmi1hOqsjtwVQEksdfHUzLJfB",
+    "client_secret": "WzAzLLIICc9rm8irl2uGw8hALFmeMLeSj0W0y2jDFZ0ZZwsWGtG20Xl0IEx23gjxoJlxXM07ICAkY0dI4yIT6PTP8URh61DiLxxsJkeSSyf6yorIZYlOhvqX41xXyTuE"
 }
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -117,7 +117,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'mock_dev_db',
+        'NAME': 'backend_travel',
         'USER': 'root',
         'PASSWORD': '1204',
         'HOST': ''

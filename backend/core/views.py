@@ -1,5 +1,6 @@
 from typing import Union
 
+from django.db.models import F
 from django.shortcuts import render
 from django.contrib.auth.hashers import make_password, check_password
 from rest_framework.permissions import IsAuthenticated
@@ -151,14 +152,14 @@ class TransportView(viewsets.ModelViewSet):
 
 
 #chua biet
-class LikeView(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView, generics.UpdateAPIView,
-               generics.DestroyAPIView, generics.RetrieveAPIView):
+class LikeViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView, generics.RetrieveAPIView
+    , generics.UpdateAPIView, generics.DestroyAPIView):
     queryset = Like.objects.all()
     serializer_class = LikeSerializer
 
 
-class RatingView(viewsets.ViewSet, generics.ListAPIView,
-                 generics.CreateAPIView, generics.RetrieveAPIView, generics.UpdateAPIView, generics.DestroyAPIView):
+class RatingViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView
+    , generics.UpdateAPIView, generics.DestroyAPIView, generics.RetrieveAPIView):
     queryset = Rating.objects.all()
     serializer_class = RatingSerializer
 
@@ -183,7 +184,6 @@ class BlogView(viewsets.ViewSet, generics.RetrieveAPIView, generics.ListAPIView,
     queryset = Blog.objects.filter(active=True)
     serializer_class = BlogSerializer
     parser_classes = [MultiPartParser, JSONParser]
-    pagination_class = BlogPagination
 
     def get_queryset(self):                   #search blog by name or tag
         b = Blog.objects.filter(active=True)
@@ -202,15 +202,15 @@ class BlogView(viewsets.ViewSet, generics.RetrieveAPIView, generics.ListAPIView,
         except:
             return Response(status=status.HTTP_400_BAD_REQUEST, data='Invalid')
 
-        @action(methods=['post'], detail=True, url_path="like")
-        def like_action(self, request, pk):
-            try:
-                action_type = request.data['type']
-            except Union[IndexError, ValueError]:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
-            else:
-                action = Like.objects.update_or_create(customer=request.user, blog=self.get_object(), defaults={'type': action_type})
-                return Response(LikeSerializer(action).data, status=status.HTTP_200_OK)
+        #@action(methods=['post'], detail=True, url_path="like")
+        #def like_action(self, request, pk):
+        #    try:
+        #        action_type = request.data['type']
+        #    except Union[IndexError, ValueError]:
+        #        return Response(status=status.HTTP_400_BAD_REQUEST)
+        #    ex:
+        #        action = Like.objects.update_or_create(customer=request.user, blog=self.get_object(), defaults={'type': action_type})
+        #        return Response(LikeSerializer(action).data, status=status.HTTP_200_OK)
 
         @action(method=['get'], detail=True, url_path="comment")
         def get_comment(self, request, pk):
@@ -379,7 +379,6 @@ class TourDetailViewSet(viewsets.ViewSet, generics.ListAPIView, generics.Retriev
     queryset = Tour.objects.filter(active=True)
     serializer_class = TourDetailSerializers
     parser_classes = [MultiPartParser, JSONParser]
-    pagination_class = [TourPagination, ]
 
     def partial_update(self, request, *args, **kwargs):
         t = request.data['id']
@@ -443,6 +442,59 @@ class TourDetailViewSet(viewsets.ViewSet, generics.ListAPIView, generics.Retriev
             def get_comment(self, request, pk):
                 cmt = Tour.objects.get(pk=pk).cmt_tour.all()
                 return Response(CmtTourSerializer(cmt, many=True).data, status=status.HTTP_200_OK)
+
+            @action(methods=['post'], detail=True, url_path="update_transport")
+            def update_tag(self, request, pk):
+                try:
+                    tour = self.get_object()
+                except:
+                    return Response(status=status.HTTP_404_NOT_FOUND)
+                try:
+                    try:
+                        transport1 = request.data['transport1']
+                        transport2 = request.data['transport2']
+                    except:
+                        return Response(status=status.HTTP_400_BAD_REQUEST, data="invalid")
+                    try:
+                        t1,_=Transport.objects.get_or_create(name=transport1)
+                        t2,_ = Transport.objects.get_or_create(name=transport2)
+                        tour.transport.set(t1,t2)
+                    except:
+                        return Response(status=status.HTTP_400_BAD_REQUEST, data="update_failed")
+                    tour.save()
+                    return Response(TourDetailSerializers(tour).data, status=status.HTTP_201_CREATED)
+                except:
+                    return Response(status=status.HTTP_400_BAD_REQUEST, data="failed")
+
+    @action(methods=['get'], detail=True, url_path="ratings")
+    def get_ratings(self, request, pk):
+        t = self.get_object()
+        return Response(RatingSerializer(t.rating.order_by("-id").all(), many=True,
+                                         context={"request": self.request}).data, status=status.HTTP_200_OK)
+
+    @action(methods=['get'], detail=True, url_path="get_comment")
+    def get_comment(self, request, pk):
+        c = self.get_object()
+        return Response(CmtTourSerializer(c.cmt_tour.order_by("-id").all(),
+                                          many=True, context={"request": self.request}).data, status=status.HTTP_200_OK)
+
+    @action(methods=['post'], detail=True, url_path="add-comment")
+    def add_comment(self, request, pk):
+        comment = request.data.get('comment')
+        if comment:
+            c = CommentTour.objects.create(comment=comment, tour=self.get_object(), customer=request.user)
+            return Response(CmtTourSerializer(c, context={'request': request}).data, status=status.HTTP_201_CREATED)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    @action(methods=['post'], detail=True, url_path="add_rating")
+    def add_rating(self, request, pk):
+        try:
+            rating = int(request.data["rating"])
+        except Union[IndexError, ValueError]:
+            return Response(status=status.HTTP_400_BAD_REQUEST, data="invalid")
+        else:
+            rate = Rating.objects.update_or_create(customer=request.user, tour=self.get_object(), defaults={"rate": rating})
+            return Response(RatingSerializer(rate).data, status=status.HTTP_200_OK)
 
 
 class AuthInfo(APIView):
