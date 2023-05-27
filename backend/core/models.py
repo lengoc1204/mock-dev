@@ -27,15 +27,15 @@ class Staff(models.Model):
 
 
 class ImgTour(models.Model):
-    image = models.ImageField(upload_to='tour/')
+    image = models.ImageField(upload_to='tours/')
     tour = models.ForeignKey('Tour', on_delete=models.CASCADE)
     name = models.CharField(max_length=50, blank=True)
     def __str__(self):
         return self.name
 
-    def img_tag(self):
+    def image_tag(self):
         if self.image.url is not None:
-            return mark_safe('<img src="{}" height ="50" />'.format(self.image.url))
+            return mark_safe('<img src="{}" height="50"/>'.format(self.image.url))
         else:
             return ""
 
@@ -114,7 +114,7 @@ class TagTour(models.Model):
 
 class Blog(models.Model):
     title = models.CharField(max_length=50, null=False)
-    image = models.ImageField(upload_to='blog/')
+    image = models.ImageField(upload_to='blogs/')
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
     active = models.BooleanField(default=True)
@@ -162,7 +162,7 @@ class Tour(ItemBase):
 
     def image_tag(self):
         if self.image.url is not None:
-            return mark_safe('<img src="{}" height="70" />'.format(self.image.url))
+            return mark_safe('<img src="{}" height="50"/>'.format(self.image.url))
         else:
             return ""
 

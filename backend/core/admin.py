@@ -5,7 +5,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django import forms
 from rest_framework import serializers
 from .models import *
-
+import admin_thumbnails
 
 class MockAppAdmin(admin.AdminSite):
     site_header = 'MOCK BACKEND'
@@ -77,10 +77,18 @@ class DestinationAdmin(admin.ModelAdmin):
     inlines = [TourStackInLine]
 
 
+@admin_thumbnails.thumbnail('image')
+class ProductImageInline(admin.TabularInline):
+    model = ImgTour
+    readonly_fields = ('id',)
+    extra = 1
+
+
 class TourAdmin(admin.ModelAdmin):
     list_display = ["name","price", "discount", "duration", "time_start","departure","destination","get_final_price", "image_tag"]
     list_filter = ['created_date']
     search_fields = ['name', 'duration']
+    inlines = [ProductImageInline, ]
 
 
 class BlogAdmin(admin.ModelAdmin):

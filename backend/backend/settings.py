@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -52,8 +53,8 @@ REST_FRAMEWORK = {
 }
 
 OAUTH2_INFO = {
-    "client_id": "V0yInzGKhOsRiVbsmi1hOqsjtwVQEksdfHUzLJfB",
-    "client_secret": "WzAzLLIICc9rm8irl2uGw8hALFmeMLeSj0W0y2jDFZ0ZZwsWGtG20Xl0IEx23gjxoJlxXM07ICAkY0dI4yIT6PTP8URh61DiLxxsJkeSSyf6yorIZYlOhvqX41xXyTuE"
+    "client_id": "1IQRKKilMUgQSSnLUK2YeyNR2VrRFlVAN88Ydvh6",
+    "client_secret": "I3mIkF4qXZDgKpPyvwiGZWHuuwHu7ovPDktoGmVSUtgsiMWvAb6H0ZckFViLit25jgq1NBgQYb5r51dUuZZF1GEKUafI60751dfNRytPDYxqyIQHfgi3177LgVyO172r"
 }
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -117,7 +118,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'backend_travel',
+        'NAME': 'travel_app_db',
         'USER': 'root',
         'PASSWORD': '1204',
         'HOST': ''
@@ -160,8 +161,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
-MEDIA_ROOT = '%s/core/static/' % BASE_DIR
+STATIC_URL = '/static/'
+MEDIA_URL = '/media/'
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'build/static')]
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+CKEDITOR_IMAGE_BACKEND = "pillow"
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
