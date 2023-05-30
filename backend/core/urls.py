@@ -20,5 +20,7 @@ router.register('destination', views.DestinationView, basename='destination')
 router.register('tour', views.TourDetailViewSet, basename='tour')
 urlpatterns = [
     path('', include(router.urls)),
-    path('oauth2-info/', views.AuthInfo.as_view())
+    path('oauth2-info/', views.AuthInfo.as_view()),
+    path('addtourview/', views.AddViewTourAPI.as_view()),
+    path('mostviewtour/', views.MostViewTour.as_view()),
 ]

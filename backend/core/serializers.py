@@ -88,7 +88,7 @@ class LikeSerializer(ModelSerializer):
 class RatingSerializer(ModelSerializer):
     class Meta:
         model = Rating
-        fields = '__all__'
+        fields = ["id", "rate", 'customer', "created_date"]
 
 
 class CmtBlogSerializer(ModelSerializer):
@@ -179,6 +179,12 @@ class DestinationSerializer(ModelSerializer):
         fields = ['id', 'name', 'image', 'content', 'created_date', "active", 'count']
 
 
+class ImgTourSerializer(ModelSerializer):
+    class Meta:
+        model = ImgTour
+        fields = ['id', 'name', 'tour', 'image']
+
+
 class TourDetailSerializers(ModelSerializer):
     rate = SerializerMethodField()
     status = SerializerMethodField()
@@ -186,7 +192,7 @@ class TourDetailSerializers(ModelSerializer):
     tag = TagTourSerializer(many=True, read_only=True)
 
     cmt_tour = SerializerMethodField()
-
+    tour_image = SerializerMethodField()
     def get_rate(self, tour):
         avg = tour.rating.aggregate(Avg('rate'))
         count_rate = tour.rating.aggregate(Count('rate'))
@@ -209,26 +215,21 @@ class TourDetailSerializers(ModelSerializer):
 
     def get_cmt_tour(self, tour):
         return CmtTourSerializer(tour.cmt_tour.all(), many=True).data
+
+    def get_tour_image(self, tour):
+        return ImgTourSerializer(tour.imgtour_set.all(), many=True).data
     class Meta:
         model = Tour
         fields = ['id', 'name', 'image', 'slot', 'time_start', 'duration', 'content', 'departure', 'destination',
                   'single_room', 'cmt_tour',
                   'price', 'discount', 'tag',
-                  'transport', 'status', 'transport', 'rate', 'status', 'get_final_price']
+                  'transport', 'status', 'transport', 'rate', 'status', 'get_final_price',
+                  'tour_image', 'children2_price', 'children5_price', 'children11_price']
 
 
 class BookingSerializer(ModelSerializer):
     customer = SerializerMethodField()
     tour = SerializerMethodField()
-    tour_name = SerializerMethodField()
-
-    def get_status2(self, booking):
-        a = booking.status
-        return a
-
-    def get_tour_name(self, booking):
-        name = booking.tour.name
-        return name
 
     def get_tour(self, booking):
         id = booking.tour.id
@@ -246,6 +247,6 @@ class BookingSerializer(ModelSerializer):
     class Meta:
         model = Booking
         fields = ['id', 'tour', 'customer', 'adult', 'children5', 'children11', 'children2', 'room',
-                  'status', 'created_date', 'tour_name', 'get_total']
+                  'status', 'created_date', 'get_total', 'address', 'phone_number', 'note']
 
 

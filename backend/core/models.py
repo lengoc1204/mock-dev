@@ -147,6 +147,11 @@ class Tour(ItemBase):
 
     single_room = models.IntegerField(default=0)
     price = models.IntegerField(null=True)
+
+    children2_price = models.IntegerField(default=0)
+    children5_price = models.IntegerField(default=0)
+    children11_price = models.IntegerField(default=0)
+
     discount = models.IntegerField(null=True, default=0)
 
     tag = models.ManyToManyField(TagTour, related_name="tour", blank=True, null=True)
@@ -154,7 +159,7 @@ class Tour(ItemBase):
     @property
     def get_final_price(self):
         if self.discount:
-            return int((self.price/self.discount)*100)
+            return self.price - self.price*self.discount/100
         return self.price
 
     def __str__(self):
@@ -176,8 +181,6 @@ class Coupon(models.Model):
 
 
 class Booking(models.Model):
-    class Meta:
-        unique_together = ['tour', 'customer', 'status']
 
     BOOKING_STATUS = (
         ('p', 'Booking processing'),
@@ -189,41 +192,52 @@ class Booking(models.Model):
     customer = models.ForeignKey(User, related_name="booking", on_delete=models.CASCADE, null=True)
 
     adult = models.IntegerField(validators=[MinValueValidator(1)], default=1)
-    children5 = models.IntegerField(validators=[MinValueValidator(0)], default=0) #tre em 2-5 tuoi
-    price5 = models.IntegerField(default=0)
+    children5 = models.IntegerField(validators=[MinValueValidator(0)], default=0, null=True) #tre em 2-5 tuoi
+    #price5 = models.IntegerField(default=0)
 
-    children11 = models.IntegerField(validators=[MinValueValidator(0)], default=0) #tre em 5-11 tuoi
-    price11 = models.IntegerField(default=0)
+    children11 = models.IntegerField(validators=[MinValueValidator(0)], default=0, null=True) #tre em 5-11 tuoi
+    #price11 = models.IntegerField(default=0)
 
-    children2 = models.IntegerField(validators=[MinValueValidator(0)], default=0) #tre em duoi 2
-    price2 = models.IntegerField(default=0)
+    children2 = models.IntegerField(validators=[MinValueValidator(0)], default=0, null=True) #tre em duoi 2
+    #price2 = models.IntegerField(default=0)
+    room = models.IntegerField(validators=[MinValueValidator(0)], default=0, null=True)  # so luong phong don neu co
 
     status = models.CharField(max_length=1, choices=BOOKING_STATUS, default="p")
     created_date = models.DateTimeField(auto_now_add=True, null=True)
 
-    room = models.IntegerField(validators=[MinValueValidator(0)], default=0) #so luong phong don neu co
+    #coupon = models.ForeignKey(
+    #    'Coupon', on_delete=models.SET_NULL, blank=True, null=True)
 
-    coupon = models.ForeignKey(
-        'Coupon', on_delete=models.SET_NULL, blank=True, null=True)
-
-    def get_children5(self):
-        return self.children5*self.price5
-
-    def get_children11(self):
-        return int(math.floor(self.children11*self.price11))
-
-    def get_children2(self):
-        return self.children2*self.price2
-
-    def get_total_room_price(self):
-        return int(self.room*self.tour.single_room)
+    phone_number = models.CharField(max_length=12, null=False, default="0933880597")
+    address = models.CharField(max_length=255, null=False, default="hhh")
+    note = models.CharField(max_length=255, null=True)
 
     def get_final_price_tour(self):
         if self.tour.discount:
             return int((self.tour.price/self.tour.discount)*100)
         return self.tour.price
+
+    def get_children2(self):
+        if self.tour.children2_price:
+            return self.children2*self.tour.children2_price
+        return 0
+
+    def get_children5(self):
+        if self.tour.children5_price:
+            return self.children5*self.tour.children5_price
+        return 0
+
+    def get_children11(self):
+        if self.tour.children11_price:
+            return self.children11 * self.tour.children11_price
+        return 0
+
+    def get_total_room_price(self):
+        return self.room*self.tour.single_room
+
     def get_adult_price(self):
         return self.adult*self.get_final_price_tour()
+
     @property
     def get_total(self):
         a = self.get_adult_price()
@@ -231,11 +245,7 @@ class Booking(models.Model):
         c =  self.get_children11()
         d =  self.get_children5()
         e =  self.get_children2()
-        total = round(a+b+c+d+e)
-
-        if self.coupon:
-            total -= self.coupon.amount
-
+        total = a+b+c+d+e
         return total
 
     def __int__(self):

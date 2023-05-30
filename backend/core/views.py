@@ -1,7 +1,6 @@
 from typing import Union
-
-from django.db.models import F
-from django.shortcuts import render
+from django.utils import timezone
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.hashers import make_password, check_password
 from rest_framework.permissions import IsAuthenticated
 from .paginator import *
@@ -403,7 +402,7 @@ class TourDetailViewSet(viewsets.ViewSet, generics.ListAPIView, generics.Retriev
             return super().partial_update(request, *args, **kwargs)
         return Response(status=status.HTTP_403_FORBIDDEN)
 
-        def get_queryset(self): #search tour
+    def get_queryset(self): #search tour
             t = Tour.objects.filter(active=True)
             try:
                 name= self.request.query_params.get("name")
@@ -438,18 +437,18 @@ class TourDetailViewSet(viewsets.ViewSet, generics.ListAPIView, generics.Retriev
             except:
                 return Response(status=status.HTTP_400_BAD_REQUEST, data="invalid")
 
-            @action(methods=['get'], detail=True, url_path="comment")
-            def get_comment(self, request, pk):
+    @action(methods=['get'], detail=True, url_path="comment")
+    def get_comment(self, request, pk):
                 cmt = Tour.objects.get(pk=pk).cmt_tour.all()
                 return Response(CmtTourSerializer(cmt, many=True).data, status=status.HTTP_200_OK)
 
-            @action(methods=['post'], detail=True, url_path="update_transport")
-            def update_tag(self, request, pk):
-                try:
+    @action(methods=['post'], detail=True, url_path="update_transport")
+    def update_tag(self, request, pk):
+            try:
                     tour = self.get_object()
-                except:
+            except:
                     return Response(status=status.HTTP_404_NOT_FOUND)
-                try:
+            try:
                     try:
                         transport1 = request.data['transport1']
                         transport2 = request.data['transport2']
@@ -463,7 +462,7 @@ class TourDetailViewSet(viewsets.ViewSet, generics.ListAPIView, generics.Retriev
                         return Response(status=status.HTTP_400_BAD_REQUEST, data="update_failed")
                     tour.save()
                     return Response(TourDetailSerializers(tour).data, status=status.HTTP_201_CREATED)
-                except:
+            except:
                     return Response(status=status.HTTP_400_BAD_REQUEST, data="failed")
 
     @action(methods=['get'], detail=True, url_path="ratings")
@@ -493,10 +492,109 @@ class TourDetailViewSet(viewsets.ViewSet, generics.ListAPIView, generics.Retriev
         except Union[IndexError, ValueError]:
             return Response(status=status.HTTP_400_BAD_REQUEST, data="invalid")
         else:
-            rate = Rating.objects.update_or_create(customer=request.user, tour=self.get_object(), defaults={"rate": rating})
+            rate, _ = Rating.objects.update_or_create(customer=request.user, tour=self.get_object(), defaults={"rate": rating})
             return Response(RatingSerializer(rate).data, status=status.HTTP_200_OK)
+
+    @action(methods=['post'], detail=True, url_path='booking_tour')
+    def booking_tour(self, request, pk):
+        try:
+            adult = request.data.get('adult')
+            children5 = request.data.get('children5')
+
+            children11 = request.data.get("children11")
+
+            children2 = request.data.get('children2')
+            room = request.data.get('room')
+
+        except:
+            return Response({"message": "Invalid data received"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            sl = self.get_object()
+
+            if sl.slot <= 0:
+                return Response(status=status.HTTP_400_BAD_REQUEST, data="out of slot")
+            else:
+                    created_date = timezone.now()
+                    c = Booking.objects.create(
+                        tour=self.get_object(),
+                        children11=children11,
+                        children2=children2,
+                        children5=children5,
+                        adult=adult,
+                        room=room,
+                        customer=request.user,
+                    )
+                    return Response(BookingSerializer(c).data, status=status.HTTP_200_OK)
+        except:
+            return Response(status=status.HTTP_400_BAD_REQUEST, data="failed")
+
+    @action(methods=['post'], detail=True, url_path='checkout')
+    def checkout(self, request, pk):
+        try:
+            address = request.data.get("address")
+            phone_number = request.data.get("phone_number")
+            note = request.data.get('note')
+            room = request.data['rom']
+            adult = request.data['adult']
+            children2 = request.data['children2']
+            children5 = request.data['children5']
+            children11 = request.data['children11']
+        except:
+            return Response({"message": "Invalid data received"}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            created_date = timezone.now()
+            c = Booking.objects.create(
+                created_date = created_date,
+                tour=self.get_object(),
+                address=address,
+                note=note,
+                adult=adult,
+                children2=children2,
+                children5=children5,
+                children11=children11,
+                room=room,
+                phone_number=phone_number,
+                customer=request.user,
+                status = 'p'
+            )
+            return Response(BookingSerializer(c).data, status=status.HTTP_201_CREATED)
+
+    @action(methods=['post'], detail=True, url_path='cancel_booking')
+    def cancel_booking(self, request, pk):
+            try:
+                ud = Booking.objects.get(customer=request.user, tour=self.get_object())
+                ud.status = "c"
+                ud.save()
+                return Response(BookingSerializer(ud).data, status=status.HTTP_200_OK)
+            except:
+                return Response(status=status.HTTP_400_BAD_REQUEST, data="failed")
+
+
+class AddCouponView(APIView):
+    def post(self, request, *args, **kwargs):
+        code = request.data.get('code', None)
+        if code is None:
+            return Response({"message": "Invalid data received"}, status=status.HTTP_400_BAD_REQUEST)
+        booking = Booking.objects.get(
+            user=self.request.user, ordered=False)
+        coupon = get_object_or_404(Coupon, code=code)
+        booking.coupon = coupon
+        booking.save()
+        return Response(status=status.HTTP_200_OK)
+
 
 
 class AuthInfo(APIView):
     def get(self, request):
         return Response(settings.OAUTH2_INFO, status=status.HTTP_200_OK)
+
+
+class BookingTourView(APIView):
+    def post(self, request, *args, **kwargs):
+        phone_number = request.data.get('phone_number', None)
+        address = request.data.get("address", None)
+
+        if phone_number is None or address is None:
+            return Response({"message": "Invalid request"}, status=status.HTTP_400_BAD_REQUEST)
+
+        tour = get_object_or_404(Tour)
