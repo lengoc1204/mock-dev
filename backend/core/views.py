@@ -514,7 +514,6 @@ class TourDetailViewSet(viewsets.ViewSet, generics.ListAPIView, generics.Retriev
             if sl.slot <= 0:
                 return Response(status=status.HTTP_400_BAD_REQUEST, data="out of slot")
             else:
-                    created_date = timezone.now()
                     c = Booking.objects.create(
                         tour=self.get_object(),
                         children11=children11,
