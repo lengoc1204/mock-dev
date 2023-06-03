@@ -136,7 +136,7 @@ class TourSerializer(ModelSerializer):
 class TourViewSerializers(ModelSerializer):
     class Meta:
         model = TourView
-        fields = ["id", "views", "created_date"]
+        fields = ["id", "views", "created_date", "tour"]
 
 class CmtTourSerializer(ModelSerializer):
     customer = SerializerMethodField()

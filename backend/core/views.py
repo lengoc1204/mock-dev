@@ -656,20 +656,20 @@ class VerifyEmail(viewsets.ModelViewSet):
 
 class IncViewsViewSet(viewsets.ModelViewSet):
     queryset = TourView.objects.all()
-    serializer_class = TourDetailSerializers
+    serializer_class = TourViewSerializers
 
     @action(methods=['post'], detail=False, url_path='get_view')
     def get_view(self, request):
-        d = request.data['created_date']
-        v = TourView.objects.get(created_at__icontains=d)
-        return Response(TourView(v).data, status=status.HTTP_200_OK)
+        d = request.data['date']
+        v = TourView.objects.get(created_date__icontains=d)
+        return Response(TourViewSerializers(v).data, status=status.HTTP_200_OK)
 
     @action(methods=['get'], detail=False, url_path='inc_view')
     def inc_view(self, request):
         d = date.today()
-        v, created = TourView.objects.get_or_create(created_at=d)
+        v, created = TourView.objects.get_or_create(created_date=d)
         v.views = F('views') + 1
         v.save()
 
         v.refresh_from_db()
-        return Response(TourView(v).data, status=status.HTTP_200_OK)
+        return Response(TourViewSerializers(v).data, status=status.HTTP_200_OK)

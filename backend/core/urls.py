@@ -18,6 +18,7 @@ router.register('cmt-tour', views.CommentTourView, basename='cmt-tour')
 router.register('departure', views.DepartureView, basename='departure')
 router.register('destination', views.DestinationView, basename='destination')
 router.register('tour', views.TourDetailViewSet, basename='tour')
+router.register('view', views.IncViewsViewSet, basename='view')
 urlpatterns = [
     path('', include(router.urls)),
     path('oauth2-info/', views.AuthInfo.as_view()),
