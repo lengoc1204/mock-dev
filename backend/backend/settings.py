@@ -65,8 +65,8 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 OAUTH2_INFO = {
-    "client_id": "1IQRKKilMUgQSSnLUK2YeyNR2VrRFlVAN88Ydvh6",
-    "client_secret": "I3mIkF4qXZDgKpPyvwiGZWHuuwHu7ovPDktoGmVSUtgsiMWvAb6H0ZckFViLit25jgq1NBgQYb5r51dUuZZF1GEKUafI60751dfNRytPDYxqyIQHfgi3177LgVyO172r"
+    "client_id": "DYJRDHdipjVKTQJYzKIqwEmzFwmpB2mI6C0d0rEr",
+    "client_secret": "hlFgzetRZaWVNBlb44yWVScH5RGPKz8qMUDifKxOZsvm9funlEAHaXi0EoKSYR8BMpkv8oCMGjaQG62JYb6Pox1THkoR0I3gIXyb7P8YHbFZoAiW8U0fox2sk2srPkwU"
 }
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -164,7 +164,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'travel_app_db',
+        'NAME': 'mock_etravel',
         'USER': 'root',
         'PASSWORD': '1204',
         'HOST': ''
