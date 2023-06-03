@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-i8an*u*i&ik&490jo#^ah^i)apee0pws2val)$r&4a-*k@)i!d
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["etravel12.pythonanywhere.com/"]
+ALLOWED_HOSTS = ["etravel12.pythonanywhere.com"]
 CORS_ALLOW_ALL_ORIGINS = True
 
 # Application definition
