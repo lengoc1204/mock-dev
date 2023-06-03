@@ -1,4 +1,11 @@
 from typing import Union
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils import six
+from django.template.loader import render_to_string
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+from django.core.mail import send_mail
 from django.utils import timezone
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.hashers import make_password, check_password
@@ -22,23 +29,29 @@ class StaffViewSet(viewsets.ModelViewSet):
 
 class UserViewSet(viewsets.ViewSet,
                   generics.CreateAPIView,
-                  generics.RetrieveAPIView):
+                  generics.RetrieveAPIView, generics.ListAPIView):
     queryset = User.objects.filter(is_active=True)
     serializer_class = UserSerializer
     parser_classes = [MultiPartParser, ]
-    #permission_classes = [permissions.IsAuthenticated]
 
-    @action(methods=['get'], detail=False, url_path="current_user")
+    def get_permissions(self):
+        if self.action == 'get_current_user':
+            return [permissions.IsAuthenticated()]
+
+        return [permissions.AllowAny()]
+
+    @action(methods=['get'], detail=False, url_path="current-user") #done
     def get_current_user(self, request):
         return Response(self.serializer_class(request.user, context={"request": request}).data,
                         status=status.HTTP_200_OK)
 
-    @action(methods=['post'], detail=False, url_path="check_exist")
+    @action(methods=['post'], detail=False, url_path="check-exist")
     def check_exist(self, request):
         a = request.data['username']
         u = User.objects.get(username=a)
         return Response(UserSerializer(u).data, status=status.HTTP_200_OK)
-    @action(methods=['post'], detail=False, url_path='change_password')
+
+    @action(methods=['post'], detail=False, url_path='change-password')
     def change_password(self, request):
         try:
             u = User.objects.get(pk=request.user.id)
@@ -92,12 +105,32 @@ class UserViewSet(viewsets.ViewSet,
         except:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-    @action(methods=['get'], detail=False, url_path="booking_detail")  ##Xong
+    @action(methods=['get'], detail=False, url_path="booking-detail")  ##Xong
     def booking_detail(self, request):
-        b = User.objects.get(pk=request.user.id).booking.all()
+        a = User.objects.get(pk=request.user.id).booking.all()
+        b = Booking.objects.filter(customer=request.user)
+        return Response(BookingSerializer(a, many=True).data)
 
-        return Response(BookingSerializer(b, many=True).data,
-                        status=status.HTTP_200_OK)
+    @action(methods=['post'], detail=False, url_path="update_booking")
+    def update_booking(self, request):
+        try:
+            tour = request.data['tour']
+            ud = Booking.objects.get(customer=request.user, tour=tour, status="p")
+            sl = Tour.objects.get(pk=tour)
+            ud.status = "a"
+            ud.save()
+
+            try:
+                if sl.slot >= 0:
+                    sl.slot = sl.slot - ud.adult - ud.children2 - ud.children5 - ud.children11
+                    sl.save()
+                    return Response(BookingSerializer(ud).data, status=status.HTTP_200_OK)
+            except:
+                return Response(status=status.HTTP_400_BAD_REQUEST, data="Failed_stt")
+
+
+        except:
+            return Response(status=status.HTTP_400_BAD_REQUEST, data="failed")
 
     @action(methods=['post'], detail=False, url_path="cancel_booking")
     def cancel_booking(self, request):
@@ -587,13 +620,30 @@ class AuthInfo(APIView):
     def get(self, request):
         return Response(settings.OAUTH2_INFO, status=status.HTTP_200_OK)
 
+class TokenGenerator(PasswordResetTokenGenerator):
+    def _make_hash_value(self, user, timestamp):
+        return (
+                six.text_type(user.pk) + six.text_type(timestamp) +
+                six.text_type(user.is_active)
+        )
 
-class BookingTourView(APIView):
-    def post(self, request, *args, **kwargs):
-        phone_number = request.data.get('phone_number', None)
-        address = request.data.get("address", None)
 
-        if phone_number is None or address is None:
-            return Response({"message": "Invalid request"}, status=status.HTTP_400_BAD_REQUEST)
+account_activation_token = TokenGenerator()
 
-        tour = get_object_or_404(Tour)
+
+class VerifyEmail(viewsets.ModelViewSet):
+    def signup(request):
+        if request.method == 'POST':
+            email = request.data['email']
+            if User.objects.filter(email=email).count() == 1:
+                user = User.objects.get(email=email)
+                current_site = get_current_site(request)
+                mail_subject = 'Activate your account.'
+                message = render_to_string('email_template.html', {
+                    'user': user,
+                    'domain': current_site.domain,
+                    'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                    'token': account_activation_token.make_token(user),
+                })
+                send_mail(mail_subject, message, settings.EMAIL_HOST_USER, [user.email])
+            return Response(status=status.HTTP_200_OK)

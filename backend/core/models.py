@@ -218,22 +218,24 @@ class Booking(models.Model):
         return self.tour.price
 
     def get_children2(self):
-        if self.tour.children2_price:
+        if self.children2:
             return self.children2*self.tour.children2_price
         return 0
 
     def get_children5(self):
-        if self.tour.children5_price:
+        if self.children5:
             return self.children5*self.tour.children5_price
         return 0
 
     def get_children11(self):
-        if self.tour.children11_price:
+        if self.children11:
             return self.children11 * self.tour.children11_price
         return 0
 
     def get_total_room_price(self):
-        return self.room*self.tour.single_room
+        if self.room:
+            return self.room*self.tour.single_room
+        return 0
 
     def get_adult_price(self):
         return self.adult*self.get_final_price_tour()
@@ -248,7 +250,7 @@ class Booking(models.Model):
         total = a+b+c+d+e
         return total
 
-    def __int__(self):
+    def __str__(self):
         return self.customer.username
 
 

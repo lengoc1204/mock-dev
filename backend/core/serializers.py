@@ -229,11 +229,6 @@ class TourDetailSerializers(ModelSerializer):
 
 class BookingSerializer(ModelSerializer):
     customer = SerializerMethodField()
-    tour = SerializerMethodField()
-
-    def get_tour(self, booking):
-        id = booking.tour.id
-        return id
 
     def get_customer(self, cmt):
         name = cmt.customer.username
