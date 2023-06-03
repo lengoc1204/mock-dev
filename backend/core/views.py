@@ -1,7 +1,9 @@
+from datetime import date
 from typing import Union
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.sites.shortcuts import get_current_site
 from django.utils import six
+from django.db.models import Q, F
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
@@ -283,19 +285,19 @@ class AddViewTourAPI(APIView):
     def post(self, request):
         t_id = request.data['id']
         t_obj = Tour.objects.get(id=t_id)
-        t_view_obj = Views.objects.filter(tour=t_obj).first()
+        t_view_obj = TourView.objects.filter(tour=t_obj).first()
         if t_view_obj:
             t_view_obj += 1
             t_view_obj.save()
         else:
-            Views.objects.create(tour=t_obj, views=1)
+            TourView.objects.create(tour=t_obj, views=1)
             return Response({"error": False, "message": 'Success'})
 
 
 class MostViewTour(APIView):
     def get(self, request):
-        t_obj = Views.objects.all().order_by('-views')[:20]
-        t_obj_data = ViewSerializer(t_obj, manu=True, context={'request': request}).data
+        t_obj = TourView.objects.all().order_by('-views')[:20]
+        t_obj_data = TourViewSerializer(t_obj, manu=True, context={'request': request}).data
         return Response(t_obj_data)
 
 
@@ -596,6 +598,14 @@ class TourDetailViewSet(viewsets.ViewSet, generics.ListAPIView, generics.Retriev
             except:
                 return Response(status=status.HTTP_400_BAD_REQUEST, data="failed")
 
+    @action(methods=['get'], detail=True, url_path='views')
+    def inc_view(self, request, pk):
+        v, created = TourView.objects.get_or_create(tour=self.get_object())
+        v.views = F('views') + 1
+        v.save()
+        v.refresh_from_db()
+        return Response(TourViewSerializers(v).data, status=status.HTTP_200_OK)
+
 
 class AddCouponView(APIView):
     def post(self, request, *args, **kwargs):
@@ -642,3 +652,24 @@ class VerifyEmail(viewsets.ModelViewSet):
                 })
                 send_mail(mail_subject, message, settings.EMAIL_HOST_USER, [user.email])
             return Response(status=status.HTTP_200_OK)
+
+
+class IncViewsViewSet(viewsets.ModelViewSet):
+    queryset = TourView.objects.all()
+    serializer_class = TourDetailSerializers
+
+    @action(methods=['post'], detail=False, url_path='get_view')
+    def get_view(self, request):
+        d = request.data['created_date']
+        v = TourView.objects.get(created_at__icontains=d)
+        return Response(TourView(v).data, status=status.HTTP_200_OK)
+
+    @action(methods=['get'], detail=False, url_path='inc_view')
+    def inc_view(self, request):
+        d = date.today()
+        v, created = TourView.objects.get_or_create(created_at=d)
+        v.views = F('views') + 1
+        v.save()
+
+        v.refresh_from_db()
+        return Response(TourView(v).data, status=status.HTTP_200_OK)

@@ -171,6 +171,9 @@ class Tour(ItemBase):
         else:
             return ""
 
+    @property
+    def tour_views(self):
+        return self.views.views
 
 class Coupon(models.Model):
     code = models.CharField(max_length=15)
@@ -311,8 +314,8 @@ class Like(models.Model):
     customer = models.ForeignKey(User, on_delete=models.CASCADE)
 
 
-class Views(models.Model):
+class TourView(models.Model):
     created_date = models.DateTimeField(null=True)
     update_date = models.DateTimeField(auto_now=True)
     views = models.IntegerField(default=0)
-    tour = models.OneToOneField(Tour, on_delete=models.CASCADE, related_name='views', null=True, blank=True)
+    tour = models.OneToOneField(Tour, on_delete=models.CASCADE, related_name='views')

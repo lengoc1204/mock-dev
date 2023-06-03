@@ -128,14 +128,15 @@ class BlogSerializer(ModelSerializer):
         model = Blog
         fields = ["id", "content", "title", "image", "created_date", 'like', 'count_like', 'cmt_blog', 'description',
                   'tag', ]
-
-
-class ViewSerializer(ModelSerializer):
-
+class TourSerializer(ModelSerializer):
     class Meta:
-        model = Views
-        fields = ["id", "views", "tour"]
+        model = Tour
+        fields = ['id', 'name', 'price', 'discount', 'image', 'slot']
 
+class TourViewSerializers(ModelSerializer):
+    class Meta:
+        model = TourView
+        fields = ["id", "views", "created_date"]
 
 class CmtTourSerializer(ModelSerializer):
     customer = SerializerMethodField()
@@ -190,9 +191,9 @@ class TourDetailSerializers(ModelSerializer):
     status = SerializerMethodField()
     transport = TransportSerializer(many=True, read_only=True)
     tag = TagTourSerializer(many=True, read_only=True)
-
     cmt_tour = SerializerMethodField()
     tour_image = SerializerMethodField()
+
     def get_rate(self, tour):
         avg = tour.rating.aggregate(Avg('rate'))
         count_rate = tour.rating.aggregate(Count('rate'))
@@ -218,13 +219,14 @@ class TourDetailSerializers(ModelSerializer):
 
     def get_tour_image(self, tour):
         return ImgTourSerializer(tour.imgtour_set.all(), many=True).data
+
     class Meta:
         model = Tour
         fields = ['id', 'name', 'image', 'slot', 'time_start', 'duration', 'content', 'departure', 'destination',
                   'single_room', 'cmt_tour',
                   'price', 'discount', 'tag',
                   'transport', 'status', 'transport', 'rate', 'status', 'get_final_price',
-                  'tour_image', 'children2_price', 'children5_price', 'children11_price']
+                  'tour_image', 'children2_price', 'children5_price', 'children11_price',]
 
 
 class BookingSerializer(ModelSerializer):
