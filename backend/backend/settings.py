@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-i8an*u*i&ik&490jo#^ah^i)apee0pws2val)$r&4a-*k@)i!d
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["etravel12.pythonanywhere.com/"]
 CORS_ALLOW_ALL_ORIGINS = True
 
 # Application definition
@@ -65,8 +65,8 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 OAUTH2_INFO = {
-    "client_id": "DYJRDHdipjVKTQJYzKIqwEmzFwmpB2mI6C0d0rEr",
-    "client_secret": "hlFgzetRZaWVNBlb44yWVScH5RGPKz8qMUDifKxOZsvm9funlEAHaXi0EoKSYR8BMpkv8oCMGjaQG62JYb6Pox1THkoR0I3gIXyb7P8YHbFZoAiW8U0fox2sk2srPkwU"
+    "client_id": "vWS36J9EgGZMdW9EOVoupGPqZkLL6QqOiKyxG0qo",
+    "client_secret": "kdkak1tBXAlQlV4qPFQXqiqQYeN2UHf2tJ1LAXjnf6vxZdnwfae7CQFM7wFg8IPoIF9frWUfV8deo8WrAbeEeDcccVrVwOlPdjcG9Oc6D08cXM7heWdEqnrzPosM6HfP"
 }
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -164,7 +164,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'mock_etravel',
+        'NAME': 'mock_etravel_db',
         'USER': 'root',
         'PASSWORD': '1204',
         'HOST': ''
