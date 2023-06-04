@@ -115,6 +115,8 @@ class BookingAdmin(admin.ModelAdmin):
     list_display = ["tour", "customer", "status", "adult", "children5", "children11", "children2", "room", "get_children5", "get_children11", "get_total"]
 
 
+class BannerAdmin(admin.ModelAdmin):
+    list_display = ["id", "name", "image_tag"]
 admin.site.register(Hotel)
 admin.site.register(TagBlog)
 admin.site.register(Blog, BlogAdmin)
@@ -128,3 +130,4 @@ admin.site.register(Booking,BookingAdmin)
 admin.site.register(Tour, TourAdmin)
 admin.site.register(User, UserAdmin)
 admin.site.register(Staff)
+admin.site.register(Banner, BannerAdmin)

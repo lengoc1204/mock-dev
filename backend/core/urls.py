@@ -22,6 +22,7 @@ router.register('view', views.IncViewsViewSet, basename='view')
 urlpatterns = [
     path('', include(router.urls)),
     path('oauth2-info/', views.AuthInfo.as_view()),
+    path('banners/', views.BannerView.as_view()),
     path('addtourview/', views.AddViewTourAPI.as_view()),
     path('mostviewtour/', views.MostViewTour.as_view()),
     #path('get-code/', views.VerifyEmail,name="verify"),

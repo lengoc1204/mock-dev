@@ -297,7 +297,7 @@ class AddViewTourAPI(APIView):
 class MostViewTour(APIView):
     def get(self, request):
         t_obj = TourView.objects.all().order_by('-views')[:20]
-        t_obj_data = TourViewSerializer(t_obj, manu=True, context={'request': request}).data
+        t_obj_data = TourViewSerializers(t_obj, many=True, context={'request': request}).data
         return Response(t_obj_data)
 
 
@@ -673,3 +673,10 @@ class IncViewsViewSet(viewsets.ModelViewSet):
 
         v.refresh_from_db()
         return Response(TourViewSerializers(v).data, status=status.HTTP_200_OK)
+
+
+class BannerView(APIView):
+    def get(self, request):
+        slider_obj = Banner.objects.all()
+        slider_serializer = BannerSerializer(slider_obj, many=True, context={'request': request}).data
+        return Response(slider_serializer)

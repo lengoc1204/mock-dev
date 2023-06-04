@@ -247,3 +247,7 @@ class BookingSerializer(ModelSerializer):
                   'status', 'created_date', 'get_total', 'address', 'phone_number', 'note']
 
 
+class BannerSerializer(ModelSerializer):
+    class Meta:
+        model = Banner
+        fields = '__all__'
