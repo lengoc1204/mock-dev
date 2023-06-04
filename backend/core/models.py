@@ -333,3 +333,17 @@ class Banner(models.Model):
             return mark_safe('<img src="{}" height="50"/>'.format(self.image.url))
         else:
             return ""
+
+
+class Slider(models.Model):
+    name = models.CharField(max_length=200)
+    image = models.ImageField(upload_to="banners/")
+
+    def __str__(self):
+        return self.name
+
+    def image_tag(self):
+        if self.image.url is not None:
+            return mark_safe('<img src="{}" height="50"/>'.format(self.image.url))
+        else:
+            return ""

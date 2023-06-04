@@ -677,6 +677,6 @@ class IncViewsViewSet(viewsets.ModelViewSet):
 
 class BannerView(APIView):
     def get(self, request):
-        slider_obj = Banner.objects.all()
-        slider_serializer = BannerSerializer(slider_obj, many=True, context={'request': request}).data
+        slider_obj = Slider.objects.all()
+        slider_serializer = SliderSerializer(slider_obj, many=True, context={'request': request}).data
         return Response(slider_serializer)
