@@ -680,3 +680,10 @@ class BannerView(APIView):
         slider_obj = Slider.objects.all()
         slider_serializer = SliderSerializer(slider_obj, many=True, context={'request': request}).data
         return Response(slider_serializer)
+
+
+class NewTourAPI(APIView):
+    def get(self, request):
+        tour = Tour.objects.filter(active=True).order_by('-created_date')[:15]
+        tour_data = TourSerializer(tour, many=True, context={'request': request}).data
+        return Response(tour_data)
