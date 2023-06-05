@@ -684,6 +684,6 @@ class BannerView(APIView):
 
 class NewTourAPI(APIView):
     def get(self, request):
-        tour = Tour.objects.filter(active=True).order_by('-created_date')[:15]
+        tour = Tour.objects.filter(active=True).order_by('-created_date')[:20]
         tour_data = TourSerializer(tour, many=True, context={'request': request}).data
         return Response(tour_data)
