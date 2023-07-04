@@ -1,6 +1,6 @@
 from django.db.models import Count, Avg
 from rest_framework.fields import CharField
-from rest_framework.serializers import ModelSerializer, SerializerMethodField
+from rest_framework.serializers import ModelSerializer, SerializerMethodField, EmailField
 from .models import *
 
 
@@ -48,12 +48,11 @@ class UserSerializer(ModelSerializer):
     class Meta:
         model = User
         fields = ["id", "first_name", "last_name", "avatar",
-                  "username", "password", "email", "date_joined", 'user_type', "is_superuser",
+                  "username", "password", "email", 'user_type', "is_superuser",
                   "is_staff", 'staff']
         extra_kwargs = {
             'password': {'write_only': 'true'}
         }
-
 
 class HotelSerializer(ModelSerializer):
     class Meta:
@@ -193,6 +192,16 @@ class TourDetailSerializers(ModelSerializer):
     tag = TagTourSerializer(many=True, read_only=True)
     cmt_tour = SerializerMethodField()
     tour_image = SerializerMethodField()
+    destination = SerializerMethodField()
+    departure = SerializerMethodField()
+
+    def get_destination(self, obj):
+        request = self.context['request']
+        return DestinationSerializer(obj.destination, context={'request': request}).data
+
+    def get_departure(self, obj):
+        request = self.context['request']
+        return DepartureSerializers(obj.departure, context={'request': request}).data
 
     def get_rate(self, tour):
         avg = tour.rating.aggregate(Avg('rate'))

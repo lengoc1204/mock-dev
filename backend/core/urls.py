@@ -26,5 +26,5 @@ urlpatterns = [
     path('banners/', views.BannerView.as_view()),
     path('addtourview/', views.AddViewTourAPI.as_view()),
     path('most_view_tour/', views.MostViewTour.as_view()),
-    #path('get-code/', views.VerifyEmail,name="verify"),
+    path('accounts/', include('django.contrib.auth.urls')),
 ]

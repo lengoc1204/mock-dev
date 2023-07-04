@@ -2,23 +2,52 @@ import math
 
 from ckeditor.fields import RichTextField
 from ckeditor_uploader.fields import RichTextUploadingField
+from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.core.validators import MinValueValidator
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, PermissionsMixin
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 # Create your models here.
 
 
-class User(AbstractUser):
-      phone_number = models.CharField(max_length=11, blank=True, null=True)
-      birth_date = models.DateField(null=True, blank=True)
-      avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
+class CustomAccountManager(BaseUserManager):
+    def create_user(self, email, username, first_name,password, last_name, **other_fields):
+        if not email:
+            raise ValueError(_('Please provide an email address'))
+        email = self.normalize_email(email)
+        user = self.model(email=email, username=username, first_name=first_name, last_name=last_name, **other_fields)
+        user.set_password(password)
+        user.save()
+        return user
 
-      REQUIRED_FIELDS = ['first_name', 'last_name']
+    def create_superuser(self, email, username, first_name, last_name, password, **other_fields):
+        other_fields.setdefault('is_staff', True)
+        other_fields.setdefault('is_superuser', True)
+        other_fields.setdefault('is_active', True)
+        if other_fields.get('is_staff') is not True:
+            raise ValueError(_('Please assign is_staff=True for superuser'))
+        if other_fields.get('is_superuser') is not True:
+            raise ValueError(_('Please assign is_superuser=True for superuser'))
+        return self.create_user(email, username, first_name, last_name, password, **other_fields)
+class User(AbstractBaseUser, PermissionsMixin):
+    email = models.EmailField(unique=True)
+    username= models.CharField(_('User name'), max_length=255)
+    first_name = models.CharField(_('First name'), max_length=255)
+    last_name = models.CharField(_('last_name'), max_length=255)
+    is_staff= models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    phone_number = models.CharField(max_length=11, blank=True, null=True)
+    birth_date = models.DateField(null=True, blank=True)
+    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
 
-      def __str__(self):
-          return self.last_name + " " + self.first_name
+    objects = CustomAccountManager()
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
+
+    def __str__(self):
+        return self.email
 
 
 class Staff(models.Model):

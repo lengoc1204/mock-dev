@@ -13,6 +13,7 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.hashers import make_password, check_password
 from rest_framework.permissions import IsAuthenticated
 from .paginator import *
+from google.oauth2 import id_token
 from .models import *
 from .serializers import *
 from rest_framework import viewsets, generics, status, permissions
@@ -403,6 +404,7 @@ class DestinationView(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveA
     parser_classes = [JSONParser, MultiPartParser]
 
 
+
 class TourDetailViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView,
                         generics.CreateAPIView, generics.UpdateAPIView, generics.DestroyAPIView):
     queryset = Tour.objects.filter(active=True)
@@ -527,6 +529,7 @@ class TourDetailViewSet(viewsets.ViewSet, generics.ListAPIView, generics.Retriev
 
     @action(methods=['post'], detail=True, url_path='booking_tour')
     def booking_tour(self, request, pk):
+        email = request.user.email
         try:
             adult = request.data.get('adult')
             children5 = request.data.get('children5')
@@ -687,3 +690,14 @@ class NewTourAPI(APIView):
         tour = Tour.objects.filter(active=True).order_by('-created_date')[:20]
         tour_data = TourSerializer(tour, many=True, context={'request': request}).data
         return Response(tour_data)
+
+
+class Google_LoginAPI(APIView):
+    def post(self, request):
+        token = request.data.get('token')
+        try:
+            idinfo = id_token.verify_oauth2_token(token, request.Request(), settings.SOCIALACCOUNT_PROVIDERS['google']["CLIENT_ID"])
+            email = idinfo['email']
+            return Response({'success': True})
+        except ValueError:
+            return Response({"error": 'Invalid token'}, status=400)
