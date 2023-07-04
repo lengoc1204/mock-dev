@@ -24,7 +24,7 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = ['*']
 ALLOWED_HOSTS = ['*']
 CORS_ORIGIN_OPENER_POLICY = 'same-origin'
-COOP_POLICY = "same-origin-allow-popups"
+#COOP_POLICY = "same-origin-allow-popups"
 #SECURE_CROSS_ORIGIN_OPENER_POLICY=['unsafe-none']
 # Application definition
 
